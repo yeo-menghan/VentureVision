@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Idea Validator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#F3F4F6',
+                        dark: {
+                            primary: '#5D5CDE',
+                            secondary: '#2D2D2D'
+                        }
+                    }
+                }
+            }
+        }
+
+        // Detect dark mode
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+    <style>
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .scroll-shadows {
+            background:
+                linear-gradient(var(--shadow-color) 33%, rgba(255, 255, 255, 0)) 0 0,
+                linear-gradient(rgba(255, 255, 255, 0), var(--shadow-color) 66%) 0 100%,
+                radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)) 0 0,
+                radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)) 0 100%;
+            background-color: var(--background-color);
+            background-repeat: no-repeat;
+            background-attachment: local, local, scroll, scroll;
+            background-size: 100% 12px, 100% 12px, 100% 6px, 100% 6px;
+        }
+
+        .dark {
+            --shadow-color: rgba(24, 24, 24, 1);
+            --background-color: #181818;
+        }
+
+        html:not(.dark) {
+            --shadow-color: rgba(255, 255, 255, 1);
+            --background-color: #FFFFFF;
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
+    <div class="max-w-6xl mx-auto p-4 flex flex-col h-screen">
+        <!-- Header -->
+        <header class="mb-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                    </svg>
+                    Business Idea Validator
+                </h1>
+                <div class="text-sm bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1">
+                    Powered by LangChain + Product Hunt
+                </div>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Validate your startup idea by discovering similar products and gaining competitive insights</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col md:flex-row gap-4 overflow-hidden">
+            <!-- Chat Section -->
+            <section class="flex flex-col w-full md:w-1/2 bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="font-bold">Describe Your Idea</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Tell us about your business concept, target audience, and key features</p>
+                </div>
+
+                <div id="chat-container" class="flex-1 overflow-y-auto scroll-shadows p-4 space-y-4">
+                    <!-- Messages will be inserted here -->
+                    <div class="flex items-start mb-4">
+                        <div class="flex-shrink-0 bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3 bg-white dark:bg-gray-700 rounded-lg p-3 max-w-3xl shadow-sm">
+                            <p>Hello! I'm your Business Idea Validator. Describe your business idea in detail, including:</p>
+                            <ul class="list-disc pl-5 mt-2 space-y-1">
+                                <li>What problem does it solve?</li>
+                                <li>Who is your target audience?</li>
+                                <li>What are the key features or selling points?</li>
+                                <li>What industry or market are you targeting?</li>
+                            </ul>
+                            <p class="mt-2">I'll analyze your idea and find similar products to help you gain competitive insights.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <form id="idea-form" class="flex">
+                        <textarea id="idea-input" placeholder="Describe your business idea here..."
+                                class="flex-1 border border-gray-300 dark:border-gray-600 rounded-l-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary text-base dark:bg-gray-700 dark:text-white"
+                                rows="2"></textarea>
+                        <button type="submit" class="bg-primary hover:bg-opacity-90 text-white px-4 rounded-r-lg transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results-section" class="hidden w-full md:w-1/2 flex flex-col bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="font-bold">Competitive Analysis</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Similar products and competitive insights</p>
+                </div>
+
+                <div id="results-container" class="flex-1 overflow-y-auto scroll-shadows p-4 space-y-5">
+                    <!-- Results will be inserted here -->
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <p class="text-lg">Submit your idea to see competitive analysis</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const ideaForm = document.getElementById('idea-form');
+        const ideaInput = document.getElementById('idea-input');
+        const resultsSection = document.getElementById('results-section');
+        const resultsContainer = document.getElementById('results-container');
+
+        // Example products database - in a real app these would come from API calls
+        const exampleProducts = [
+            {
+                name: "Notion",
+                description: "All-in-one workspace for notes, tasks, wikis, and databases",
+                url: "https://www.notion.so",
+                upvotes: 2481,
+                launchDate: "March 2016",
+                category: "Productivity"
+            },
+            {
+                name: "Airtable",
+                description: "Part spreadsheet, part database, and entirely flexible",
+                url: "https://airtable.com",
+                upvotes: 1589,
+                launchDate: "October 2015",
+                category: "Productivity"
+            },
+            {
+                name: "Coda",
+                description: "A new doc that brings words, data, and teams together",
+                url: "https://coda.io",
+                upvotes: 1243,
+                launchDate: "May 2019",
+                category: "Productivity"
+            }
+        ];
+
+        // Example competitive advantages
+        const exampleAdvantages = [
+            "Focus on specific user segments that larger competitors may be overlooking",
+            "Invest in a more intuitive UI and streamlined onboarding process",
+            "Develop native mobile apps with offline capabilities"
+        ];
+
+        function addUserMessage(message) {
+            const messageHtml = `
+                <div class="flex items-start justify-end mb-4">
+                    <div class="mr-3 bg-primary text-white rounded-lg p-3 max-w-3xl shadow-sm">
+                        <p>${message}</p>
+                    </div>
+                    <div class="flex-shrink-0 bg-gray-300 dark:bg-gray-600 rounded-full w-8 h-8 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+            `;
+            chatContainer.innerHTML += messageHtml;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function addBotMessage(message) {
+            const messageHtml = `
+                <div class="flex items-start mb-4">
+                    <div class="flex-shrink-0 bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3 bg-white dark:bg-gray-700 rounded-lg p-3 max-w-3xl shadow-sm">
+                        <p>${message}</p>
+                    </div>
+                </div>
+            `;
+            chatContainer.innerHTML += messageHtml;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function addLoadingMessage() {
+            const loadingId = 'loading-' + Date.now();
+            const loadingHtml = `
+                <div id="${loadingId}" class="flex items-start mb-4">
+                    <div class="flex-shrink-0 bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3 bg-white dark:bg-gray-700 rounded-lg p-3 max-w-3xl shadow-sm">
+                        <p class="loading-dots">Analyzing your idea</p>
+                    </div>
+                </div>
+            `;
+            chatContainer.innerHTML += loadingHtml;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return loadingId;
+        }
+
+        function removeLoadingMessage(loadingId) {
+            const loadingElement = document.getElementById(loadingId);
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+
+        function displayResults(idea) {
+            resultsSection.classList.remove('hidden');
+
+            // Clear previous results
+            resultsContainer.innerHTML = '';
+
+            // Show analysis summary
+            const summaryHtml = `
+                <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-medium text-lg mb-2">Analysis Summary</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Based on your idea description, we found several similar products in the market. Here's what sets them apart and how you might differentiate yourself.</p>
+                </div>
+            `;
+            resultsContainer.innerHTML += summaryHtml;
+
+            // Show similar products
+            const productsHtml = `
+                <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-medium text-lg mb-3">Similar Products (${exampleProducts.length})</h3>
+                    <div class="space-y-4">
+                        ${exampleProducts.map(product => `
+                            <div class="border-b border-gray-200 dark:border-gray-600 pb-3 last:border-0 last:pb-0">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-medium">${product.name}</h4>
+                                        <p class="text-gray-600 dark:text-gray-400 text-sm">${product.description}</p>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                                        </svg>
+                                        ${product.upvotes}
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
+                                    <span class="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded mr-2">${product.category}</span>
+                                    <span>Launched: ${product.launchDate}</span>
+                                </div>
+                                <div class="mt-2">
+                                    <a href="${product.url}" target="_blank" class="text-primary hover:underline text-sm flex items-center">
+                                        Visit Website
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                                            <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            resultsContainer.innerHTML += productsHtml;
+
+            // Show competitive advantages
+            const advantagesHtml = `
+                <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm">
+                    <h3 class="font-medium text-lg mb-3">Competitive Advantages</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-3">Here are some ways you could differentiate your product:</p>
+                    <ul class="space-y-2">
+                        ${exampleAdvantages.map(advantage => `
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                                <span>${advantage}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+            resultsContainer.innerHTML += advantagesHtml;
+        }
+
+        // LLM analysis function - in a real app, this would call the Poe API
+        async function analyzeBotResponse(idea) {
+            // Mock delay for demonstration
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            addBotMessage(`
+                <p>Thanks for sharing your idea! I've analyzed it and found several similar products in the market.</p>
+                <p class="mt-2">Check out the "Competitive Analysis" section to see what's already out there and how you might differentiate your product.</p>
+            `);
+
+            displayResults(idea);
+        }
+
+        // Handle form submission
+        ideaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const idea = ideaInput.value.trim();
+
+            if (idea) {
+                addUserMessage(idea);
+                ideaInput.value = '';
+
+                const loadingId = addLoadingMessage();
+
+                try {
+                    // In a real implementation, you would use the Poe API here
+                    // await window.Poe.sendUserMessage("@Claude-3.7-Sonnet Analyze this business idea: " + idea, ...);
+
+                    // For demo purposes, we'll use our mock function
+                    await analyzeBotResponse(idea);
+                } catch (error) {
+                    console.error("Error analyzing idea:", error);
+                    addBotMessage("I'm sorry, I encountered an error analyzing your idea. Please try again.");
+                } finally {
+                    removeLoadingMessage(loadingId);
+                }
+            }
+        });
+
+        // Help the textarea grow as content is added
+        ideaInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    </script>
+</body>
+</html>
